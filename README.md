@@ -1,1 +1,1 @@
-# runes.es
+# @i-xi-dev/runes
