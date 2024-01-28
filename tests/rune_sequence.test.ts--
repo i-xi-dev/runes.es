@@ -1,0 +1,74 @@
+import { assertStrictEquals, assertThrows } from "./deps.ts";
+import { RuneSequence } from "../mod.ts";
+
+Deno.test("RuneSequence.segment(string, number)", () => {
+  assertStrictEquals([...RuneSequence.segment("", 2)].join(","), "");
+  assertStrictEquals([...RuneSequence.segment("abc", 2)].join(","), "ab,c");
+
+  assertThrows(
+    () => {
+      [...RuneSequence.segment(1 as unknown as string, 0)];
+    },
+    TypeError,
+    undefined,
+    "input",
+  );
+
+  assertThrows(
+    () => {
+      [...RuneSequence.segment("", 0)];
+    },
+    TypeError,
+    undefined,
+    "runeCount",
+  );
+
+  assertStrictEquals(
+    [...RuneSequence.segment("\u{10000}\u{10001}\u{10002}", 2)].join(","),
+    "\u{10000}\u{10001},\u{10002}",
+  );
+});
+
+Deno.test("RuneSequence.segment(string, number, string)", () => {
+  assertStrictEquals([...RuneSequence.segment("", 2, "X")].join(","), "");
+  assertStrictEquals(
+    [...RuneSequence.segment("abc", 2, "X")].join(","),
+    "ab,cX",
+  );
+  assertStrictEquals(
+    [...RuneSequence.segment("あいう", 2, "X")].join(","),
+    "あい,うX",
+  );
+  assertStrictEquals(
+    [...RuneSequence.segment("あ\uD800\uDC00う", 2, "X")].join(","),
+    "あ\uD800\uDC00,うX",
+  );
+  assertStrictEquals(
+    [...RuneSequence.segment("あい\uD800\uDC00", 2, "X")].join(","),
+    "あい,\uD800\uDC00X",
+  );
+
+  //
+  assertStrictEquals(
+    [...RuneSequence.segment("🤷🏽‍♀️", 2, "X")].join(","),
+    "\u{d83e}\u{dd37}\u{d83c}\u{dffd},\u{200d}\u{2640},\u{fe0f}X",
+  );
+
+  assertThrows(
+    () => {
+      [...RuneSequence.segment("", 1, "")];
+    },
+    TypeError,
+    undefined,
+    "paddingRune",
+  );
+
+  assertThrows(
+    () => {
+      [...RuneSequence.segment("", 1, "XX")];
+    },
+    TypeError,
+    undefined,
+    "paddingRune",
+  );
+});
